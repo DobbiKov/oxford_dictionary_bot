@@ -1,0 +1,12 @@
+[package]
+name = "oxford_dictionary_bot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.98"
+futures = "0.3.31"
+oxford_dictionary_lib = { git = "https://github.com/DobbiKov/oxford-dictionary-lib.git" }
+telebot = "0.3.1"
+teloxide = { version = "0.15.0", features = ["macros"] }
+tokio = { version =  "1.8", features = ["rt-multi-thread", "macros"] }
