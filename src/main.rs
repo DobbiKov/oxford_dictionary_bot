@@ -1,3 +1,4 @@
+use loggit;
 use oxford_dictionary_lib::{search_dictionary, ParseLinkResult};
 use teloxide::{
     adaptors::DefaultParseMode,
@@ -19,8 +20,11 @@ async fn main() {
     let bot = teloxide::Bot::from_env();
 
     let handler = Update::filter_message()
-        .inspect(|u: Update| {
-            eprintln!("{u:#?}");
+        .inspect(|u: Message| {
+            //eprintln!("{u:#?}");
+            if let Some(user) = u.from() {
+                loggit::info!("{}| {}", user.full_name(), u.text().unwrap_or_default());
+            }
         })
         .branch(
             Update::filter_message()
@@ -40,7 +44,7 @@ async fn main() {
 
 async fn start_command_handler(bot: teloxide::Bot, msg: Message) -> ResponseResult<()> {
     let msg_to_send =
-        "Welcome to the Oxford Dictionary Bot!\n Write me any word to learn it's meaning!";
+        "Welcome to the Oxford Dictionary Bot!\nWrite me any word to learn it's meaning!";
 
     bot.send_message(msg.chat_id().unwrap(), msg_to_send).await;
     Ok(())
@@ -65,7 +69,7 @@ async fn usual_text_handler(bot: teloxide::Bot, msg: Message) -> ResponseResult<
                 oxford_dictionary_lib::ParseLinkResult::MeaningsList(vec_r) => {
                     let mut txt_to_send = "The word is found, here's a meaning list:\n".to_string();
                     vec_r.iter().enumerate().for_each(|(c, el)| {
-                        let temp_str = format!("{}.{}\n", c + 1, el);
+                        let temp_str = format!("{}. {}\n", c + 1, el);
                         txt_to_send.push_str(&temp_str)
                     });
 
