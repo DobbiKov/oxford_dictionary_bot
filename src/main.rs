@@ -1,6 +1,12 @@
 use oxford_dictionary_lib::{search_dictionary, ParseLinkResult};
 use teloxide::{
-    adaptors::DefaultParseMode, dispatching::dialogue::GetChatId, prelude::*, types::User,
+    adaptors::DefaultParseMode,
+    dispatching::dialogue::GetChatId,
+    prelude::*,
+    types::{
+        InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, KeyboardRemove, ReplyMarkup,
+        True, User,
+    },
     RequestError,
 };
 
@@ -47,14 +53,14 @@ async fn usual_text_handler(bot: teloxide::Bot, msg: Message) -> ResponseResult<
         match search_dictionary_wrapper(&word).await {
             Ok(search_res) => match search_res {
                 oxford_dictionary_lib::ParseLinkResult::ResultList(vec_r) => {
-                    let mut txt_to_send =
-                        "This word is not found, but there are possible variants:\n".to_string();
-                    vec_r.iter().enumerate().for_each(|(c, el)| {
-                        let temp_str = format!("{}.{}\n", c + 1, el);
-                        txt_to_send.push_str(&temp_str);
-                    });
+                    let txt_to_send =
+                        "This word is not found, but there are possible variants:".to_string();
+                    let keyboard = make_keyboard_results(&vec_r);
 
-                    bot.send_message(msg.chat_id().unwrap(), txt_to_send).await;
+                    let _ = bot
+                        .send_message(msg.chat_id().unwrap(), txt_to_send)
+                        .reply_markup(keyboard)
+                        .await;
                 }
                 oxford_dictionary_lib::ParseLinkResult::MeaningsList(vec_r) => {
                     let mut txt_to_send = "The word is found, here's a meaning list:\n".to_string();
@@ -63,7 +69,12 @@ async fn usual_text_handler(bot: teloxide::Bot, msg: Message) -> ResponseResult<
                         txt_to_send.push_str(&temp_str)
                     });
 
-                    bot.send_message(msg.chat_id().unwrap(), txt_to_send).await;
+                    bot.send_message(msg.chat_id().unwrap(), txt_to_send)
+                        .reply_markup(KeyboardRemove {
+                            remove_keyboard: True,
+                            selective: false,
+                        })
+                        .await;
                 }
                 oxford_dictionary_lib::ParseLinkResult::None => {
                     bot.send_message(msg.chat_id().unwrap(), "No variants found for your word!");
@@ -90,4 +101,17 @@ async fn search_dictionary_wrapper(
     })
     .await
     .unwrap()
+}
+
+/// Creates a keyboard made by buttons in a big column.
+fn make_keyboard_results(results: &Vec<String>) -> ReplyMarkup {
+    let mut keyboard: Vec<Vec<KeyboardButton>> = vec![];
+
+    for word in results {
+        let row = KeyboardButton::new(word);
+
+        keyboard.push(vec![row]);
+    }
+
+    ReplyMarkup::keyboard(keyboard)
 }
