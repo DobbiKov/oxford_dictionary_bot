@@ -49,8 +49,8 @@ async fn usual_text_handler(bot: teloxide::Bot, msg: Message) -> ResponseResult<
                 oxford_dictionary_lib::ParseLinkResult::ResultList(vec_r) => {
                     let mut txt_to_send =
                         "This word is not found, but there are possible variants:\n".to_string();
-                    vec_r.iter().for_each(|el| {
-                        let mut temp_str = format!("{}\n", el);
+                    vec_r.iter().enumerate().for_each(|(c, el)| {
+                        let temp_str = format!("{}.{}\n", c + 1, el);
                         txt_to_send.push_str(&temp_str);
                     });
 
@@ -58,9 +58,8 @@ async fn usual_text_handler(bot: teloxide::Bot, msg: Message) -> ResponseResult<
                 }
                 oxford_dictionary_lib::ParseLinkResult::MeaningsList(vec_r) => {
                     let mut txt_to_send = "The word is found, here's a meaning list:\n".to_string();
-                    vec_r.iter().for_each(|el| {
-                        let mut temp_str = el.to_owned();
-                        temp_str.push_str("\n");
+                    vec_r.iter().enumerate().for_each(|(c, el)| {
+                        let temp_str = format!("{}.{}\n", c + 1, el);
                         txt_to_send.push_str(&temp_str)
                     });
 
