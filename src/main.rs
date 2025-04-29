@@ -15,7 +15,14 @@ type HandlerResult = anyhow::Result<()>;
 
 #[tokio::main]
 async fn main() {
-    loggit::logger::set_global_formatting("{date}**{time} | <blue>{level}<blue>: {message}")
+    if let Err(e) =
+        loggit::logger::set_global_formatting("{date}**{time} | <blue>{level}<blue>: {message}")
+    {
+        panic!(
+            "Got an error while trying to configure loggit, here's an error: {}",
+            e
+        );
+    }
     loggit::info!("Starting bot");
 
     let bot = teloxide::Bot::from_env();
