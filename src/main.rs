@@ -15,7 +15,8 @@ type HandlerResult = anyhow::Result<()>;
 
 #[tokio::main]
 async fn main() {
-    println!("Startign bot");
+    loggit::logger::set_global_formatting("{date}**{time} | <blue>{level}<blue>: {message}")
+    loggit::info!("Starting bot");
 
     let bot = teloxide::Bot::from_env();
 
@@ -23,7 +24,7 @@ async fn main() {
         .inspect(|u: Message| {
             //eprintln!("{u:#?}");
             if let Some(user) = u.from() {
-                loggit::info!("{}| {}", user.full_name(), u.text().unwrap_or_default());
+                loggit::info!("{} | {}", user.full_name(), u.text().unwrap_or_default());
             }
         })
         .branch(
@@ -44,7 +45,7 @@ async fn main() {
 
 async fn start_command_handler(bot: teloxide::Bot, msg: Message) -> ResponseResult<()> {
     let msg_to_send =
-        "Welcome to the Oxford Dictionary Bot!\nWrite me any word to learn it's meaning!";
+        "Welcome to the Oxford Dictionary Bot!\nWrite me any word or phrase in order to learn it's meaning(s)!\n\nIn case of encountering any issues feel free to join me: @dobbikov";
 
     bot.send_message(msg.chat_id().unwrap(), msg_to_send).await;
     Ok(())
